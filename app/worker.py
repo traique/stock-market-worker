@@ -57,17 +57,25 @@ def fetch_price(symbol: str):
             interval="1m",
         )
 
+        if df is None:
+            print(f"[NONE] {symbol}")
+            return None
+
         if df.empty:
             print(f"[EMPTY] {symbol}")
             return None
 
         latest = df.iloc[-1]
 
-        price = latest.get("close")
-        volume = latest.get("volume")
+        if latest is None:
+            print(f"[NO LATEST] {symbol}")
+            return None
 
-        if price is None:
-            print(f"[NO PRICE] {symbol}")
+        price = latest.get("close", 0)
+        volume = latest.get("volume", 0)
+
+        if not price:
+            print(f"[INVALID PRICE] {symbol}")
             return None
 
         return {
@@ -77,7 +85,11 @@ def fetch_price(symbol: str):
         }
 
     except Exception as e:
-        print(f"[ERROR] {symbol}: {e}")
+        print(
+            f"[FETCH ERROR] "
+            f"{symbol}: {str(e)}"
+        )
+
         return None
 
 

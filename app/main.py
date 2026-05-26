@@ -3,10 +3,13 @@ import schedule
 
 from worker import update_prices
 
+
 def run():
     update_prices()
 
-schedule.every(30).seconds.do(run)
+
+# chạy mỗi 5 phút
+schedule.every(5).minutes.do(run)
 
 print("Market worker started...")
 

@@ -63,6 +63,9 @@ def fetch_price(symbol: str):
             interval="1m",
         )
 
+        print(f"[DATAFRAME] {symbol}")
+        print(df)
+
         if df is None:
             print(f"[NONE] {symbol}")
             return None
@@ -73,8 +76,19 @@ def fetch_price(symbol: str):
 
         latest = df.iloc[-1]
 
+        print(f"[LATEST] {symbol}")
+        print(latest)
+
         price = latest.get("close")
         volume = latest.get("volume", 0)
+
+        print(
+            f"[PRICE] {symbol}: {price}"
+        )
+
+        print(
+            f"[VOLUME] {symbol}: {volume}"
+        )
 
         if not price:
             print(f"[INVALID PRICE] {symbol}")
@@ -125,21 +139,14 @@ def update_market_price(data):
 def update_prices():
     print("Updating market prices...")
 
-    symbols = get_all_symbols()
+    # debug 1 mã trước
+    symbol = "SHS"
 
-    print(f"Found {len(symbols)} symbols")
+    data = fetch_price(symbol)
 
-    if not symbols:
-        print("No symbols found")
-        return
+    print(f"[DEBUG RESULT] {data}")
 
-    for symbol in symbols:
-        data = fetch_price(symbol)
-
-        if data:
-            update_market_price(data)
-
-        # tránh rate limit
-        time.sleep(1)
+    if data:
+        update_market_price(data)
 
     print("Update completed.")

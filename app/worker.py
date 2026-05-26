@@ -11,7 +11,9 @@ def get_all_symbols():
     # portfolios
     try:
         portfolio_rows = (
-            supabase.table("portfolios")
+            supabase
+            .schema("public")
+            .table("portfolios")
             .select("symbol")
             .execute()
         )
@@ -28,7 +30,9 @@ def get_all_symbols():
     # watchlists
     try:
         watchlist_rows = (
-            supabase.table("watchlists")
+            supabase
+            .schema("public")
+            .table("watchlists")
             .select("symbol")
             .execute()
         )
@@ -95,13 +99,17 @@ def fetch_price(symbol: str):
 
 def update_market_price(data):
     try:
-        supabase.table(
-            "market_prices"
-        ).upsert({
-            "symbol": data["symbol"],
-            "price": data["price"],
-            "volume": data["volume"],
-        }).execute()
+        (
+            supabase
+            .schema("public")
+            .table("market_prices")
+            .upsert({
+                "symbol": data["symbol"],
+                "price": data["price"],
+                "volume": data["volume"],
+            })
+            .execute()
+        )
 
         print(
             f"[UPDATED] "

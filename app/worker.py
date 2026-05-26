@@ -1,4 +1,5 @@
-from vnstock import Vnstock
+from vnstock.api.quote import Quote
+
 from supabase_client import supabase
 
 WATCHLIST = [
@@ -6,26 +7,36 @@ WATCHLIST = [
     "FPT",
     "HPG",
     "BSR",
+    "VCB",
+    "SSI",
 ]
 
 def fetch_price(symbol: str):
     try:
-        stock = Vnstock().stock(
+        q = Quote(
             symbol=symbol,
-            source='VCI',
+            source="VCI",
         )
 
-        df = stock.quote.intraday()
+        df = q.intraday()
 
         if df.empty:
+            print(f"[EMPTY] {symbol}")
             return None
 
         latest = df.iloc[-1]
 
+        price = latest.get("price")
+        volume = latest.get("volume")
+
+        if price is None:
+            print(f"[NO PRICE] {symbol}")
+            return None
+
         return {
             "symbol": symbol,
-            "price": float(latest["price"]),
-            "volume": float(latest["volume"]),
+            "price": float(price),
+            "volume": float(volume or 0),
         }
 
     except Exception as e:
@@ -34,16 +45,33 @@ def fetch_price(symbol: str):
 
 
 def update_prices():
+    print("Updating market prices...")
+
     for symbol in WATCHLIST:
         data = fetch_price(symbol)
 
         if not data:
             continue
 
-        supabase.table("market_prices").upsert({
-            "symbol": data["symbol"],
-            "price": data["price"],
-            "volume": data["volume"],
-        }).execute()
+        try:
+            supabase.table(
+                "market_prices"
+            ).upsert({
+                "symbol": data["symbol"],
+                "price": data["price"],
+                "volume": data["volume"],
+            }).execute()
 
-        print(f"Updated {symbol}")
+            print(
+                f"[UPDATED] "
+                f"{data['symbol']} "
+                f"{data['price']}"
+            )
+
+        except Exception as e:
+            print(
+                f"[SUPABASE ERROR] "
+                f"{symbol}: {e}"
+            )
+
+    print("Update completed.")

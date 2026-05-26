@@ -13,7 +13,7 @@ def get_all_symbols():
         portfolio_rows = (
             supabase
             .schema("public")
-            .table("portfolios")
+            .table("portfolio_settings")
             .select("symbol")
             .execute()
         )

@@ -8,24 +8,24 @@ from supabase_client import supabase
 def get_all_symbols():
     symbols = set()
 
-    # portfolios
+    # holdings
     try:
-        portfolio_rows = (
+        holdings_rows = (
             supabase
             .schema("public")
-            .table("portfolio_settings")
+            .table("holdings")
             .select("symbol")
             .execute()
         )
 
-        for row in portfolio_rows.data:
+        for row in holdings_rows.data:
             symbol = row.get("symbol")
 
             if symbol:
                 symbols.add(symbol.upper())
 
     except Exception as e:
-        print(f"[PORTFOLIO ERROR] {e}")
+        print(f"[HOLDINGS ERROR] {e}")
 
     # watchlists
     try:

@@ -10,7 +10,10 @@ from worker import update_prices
 app = FastAPI()
 
 
-@app.get("/")
+@app.api_route(
+    "/",
+    methods=["GET", "HEAD"],
+)
 def health():
     return {
         "status": "ok",
@@ -33,7 +36,6 @@ def run_worker():
         time.sleep(1)
 
 
-# chạy worker background thread
 threading.Thread(
     target=run_worker,
     daemon=True,

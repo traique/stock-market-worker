@@ -5,3 +5,5 @@ pandas
 supabase
 python-dotenv
 schedule
+fastapi
+uvicorn

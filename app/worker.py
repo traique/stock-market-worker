@@ -4,10 +4,11 @@ import requests
 from supabase_client import supabase
 
 
-VCI_URL = (
-    "https://priceboard-api.vcbs.com.vn/"
-    "stock/snapshot"
-)
+HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0"
+    )
+}
 
 
 def get_all_symbols():
@@ -58,8 +59,14 @@ def fetch_price(symbol: str):
     try:
         print(f"[FETCHING] {symbol}")
 
+        url = (
+            "https://finance.vietstock.vn/"
+            f"{symbol}/overview.htm"
+        )
+
         response = requests.get(
-            f"{VCI_URL}/{symbol}",
+            url,
+            headers=HEADERS,
             timeout=10,
         )
 
@@ -72,32 +79,33 @@ def fetch_price(symbol: str):
 
             return None
 
-        data = response.json()
+        html = response.text
 
-        print(f"[RAW DATA] {symbol}")
-        print(data)
+        marker = 'Price:'
 
-        price = (
-            data.get("matchPrice")
-            or data.get("lastPrice")
-            or 0
-        )
+        if marker not in html:
+            print(
+                f"[NO PRICE MARKER] "
+                f"{symbol}"
+            )
 
-        volume = (
-            data.get("matchVol")
-            or data.get("totalVol")
-            or 0
-        )
-
-        if not price:
-            print(f"[INVALID PRICE] {symbol}")
             return None
 
-        return {
-            "symbol": symbol,
-            "price": float(price),
-            "volume": float(volume),
-        }
+        # debug ngắn
+        index = html.find(marker)
+
+        snippet = html[
+            index:index + 200
+        ]
+
+        print(
+            f"[HTML SNIPPET] "
+            f"{symbol}"
+        )
+
+        print(snippet)
+
+        return None
 
     except Exception as e:
         print(
@@ -138,20 +146,10 @@ def update_market_price(data):
 def update_prices():
     print("Updating market prices...")
 
-    symbols = get_all_symbols()
+    symbol = "SHS"
 
-    print(f"Found {len(symbols)} symbols")
+    data = fetch_price(symbol)
 
-    if not symbols:
-        print("No symbols found")
-        return
-
-    for symbol in symbols:
-        data = fetch_price(symbol)
-
-        if data:
-            update_market_price(data)
-
-        time.sleep(0.5)
+    print(f"[DEBUG RESULT] {data}")
 
     print("Update completed.")

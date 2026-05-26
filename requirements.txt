@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+vnstock
+pandas
+supabase
+python-dotenv
+schedule

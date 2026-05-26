@@ -51,35 +51,30 @@ def get_all_symbols():
 
 def fetch_price(symbol: str):
     try:
+        print(f"[FETCHING] {symbol}")
+
         q = Quote(
             symbol=symbol,
             source="VCI",
         )
 
-        data = q.quote()
+        df = q.history(
+            period="1D",
+            interval="1m",
+        )
 
-        if data is None:
+        if df is None:
             print(f"[NONE] {symbol}")
             return None
 
-        if len(data) == 0:
+        if len(df) == 0:
             print(f"[EMPTY] {symbol}")
             return None
 
-        latest = data.iloc[0]
+        latest = df.iloc[-1]
 
-        price = (
-            latest.get("match_price")
-            or latest.get("price")
-            or latest.get("close")
-            or 0
-        )
-
-        volume = (
-            latest.get("match_volume")
-            or latest.get("volume")
-            or 0
-        )
+        price = latest.get("close")
+        volume = latest.get("volume", 0)
 
         if not price:
             print(f"[INVALID PRICE] {symbol}")
@@ -88,7 +83,7 @@ def fetch_price(symbol: str):
         return {
             "symbol": symbol,
             "price": float(price),
-            "volume": float(volume),
+            "volume": float(volume or 0),
         }
 
     except Exception as e:
@@ -139,14 +134,10 @@ def update_prices():
         return
 
     for symbol in symbols:
-        print(f"[FETCHING] {symbol}")
-
         data = fetch_price(symbol)
 
-        if not data:
-            continue
-
-        update_market_price(data)
+        if data:
+            update_market_price(data)
 
         # tránh rate limit
         time.sleep(1)
